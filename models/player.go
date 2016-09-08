@@ -7,13 +7,13 @@ import (
 )
 
 type Player struct {
-  SteamID  int
+  SteamID  string
   WishList []string
 }
 
 func (p *Player) UploadWishList()   {
   fmt.Println("UploadWishList", p.SteamID)
-  resp, err := http.Get("http://steamcommunity.com/profiles/76561198019326316/wishlist/")
+  resp, err := http.Get("http://steamcommunity.com/profiles/" + p.SteamID + "/wishlist/")
   defer resp.Body.Close()
 
   if err != nil {
