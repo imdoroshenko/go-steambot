@@ -1,4 +1,4 @@
-Steambot (in progress)
+Steambot [in progress]
 
 This application is my first try of Go.
 
