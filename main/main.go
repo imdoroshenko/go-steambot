@@ -12,9 +12,17 @@ func main() {
   appRouter := new(router.Router)
   appRouter.AddActions(
     router.NewAction("GET", "/wishlist/[playerID]", wishList),
-    router.NewAction("GET", "/foo", func (r http.ResponseWriter, rq *http.Request, p map[string]string) []byte {return []byte("foo")}),
-    router.NewAction("POST", "/bar", func (r http.ResponseWriter, rq *http.Request, p map[string]string) []byte {return []byte("bar")}))
+    router.NewAction("GET", "/foo", foo),
+    router.NewAction("POST", "/bar", bar))
 	http.ListenAndServe(":8080", appRouter)
+}
+
+func bar(res http.ResponseWriter, req *http.Request, params map[string]string) []byte  {
+  return []byte("bar")
+}
+
+func foo(res http.ResponseWriter, req *http.Request, params map[string]string) []byte  {
+  return []byte("foo")
 }
 
 func wishList(res http.ResponseWriter, req *http.Request, params map[string]string) []byte {
