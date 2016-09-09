@@ -9,7 +9,7 @@ type Router struct {
   Actions []*Action
 }
 
-const defaultResponse []byte = []byte("")
+const defaultResponse string = ""
 
 func (r *Router) AddActions(actions ...*Action) *Router {
   for _, action := range actions {
