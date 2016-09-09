@@ -8,6 +8,11 @@ import (
 
 type ActionHandler func(http.ResponseWriter, *http.Request, map[string]string) []byte
 
+const rePrefix string = "^"
+const rePostfix string = "$"
+const reParamMatch string = `\[(\w+)]`
+const reParamPlaceholder string = "(.+)"
+
 func NewAction (method string, path string, handler ActionHandler) *Action {
   action := new(Action)
   action.Method = method
@@ -39,12 +44,12 @@ func (a Action) ExtractParams(req *http.Request) map[string]string {
 }
 
 func (a *Action) Compile() *Action {
-  patters := regexp.MustCompile(`\[(\w+)]`)
+  patters := regexp.MustCompile(reParamMatch)
   matches := patters.FindAllStringSubmatch(a.Path, -1)
-  rePattern := "^" + a.Path + "$"
+  rePattern := rePrefix + a.Path + rePostfix
   for _, match := range(matches) {
     a.paramsList = append(a.paramsList, match[1])
-    rePattern = strings.Replace(rePattern, match[0], `(.+)`, -1)
+    rePattern = strings.Replace(rePattern, match[0], reParamPlaceholder, -1)
   }
   a.re = regexp.MustCompile(rePattern)
   return a;

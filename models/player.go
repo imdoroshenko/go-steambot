@@ -11,6 +11,8 @@ type Player struct {
   WishList []string
 }
 
+// wishlist is not availible in steam web API,
+// so I upload players wishlist from steam profile web page
 func (p *Player) UploadWishList()   {
   fmt.Println("UploadWishList", p.SteamID)
   resp, err := http.Get("http://steamcommunity.com/profiles/" + p.SteamID + "/wishlist/")

@@ -9,6 +9,8 @@ type Router struct {
   Actions []*Action
 }
 
+const defaultResponse []byte = []byte("")
+
 func (r *Router) AddActions(actions ...*Action) *Router {
   for _, action := range actions {
     r.Actions = append(r.Actions, action.Compile())
@@ -28,7 +30,7 @@ func (r *Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
   }
 
   if result == nil {
-      res.Write([]byte(""))
+      res.Write([]byte(defaultResponse))
     } else {
       res.Write(result)
   }
