@@ -5,7 +5,6 @@ import (
 	"github.com/imdoroshenko/go-steambot/models"
   "github.com/imdoroshenko/go-steambot/router"
   "encoding/json"
-  "fmt"
 )
 
 func main() {
@@ -26,8 +25,7 @@ func foo(res http.ResponseWriter, req *http.Request, params map[string]string) [
 }
 
 func wishList(res http.ResponseWriter, req *http.Request, params map[string]string) []byte {
-  fmt.Println(params)
-  p := &models.Player{SteamID:params["playerID"]}
+  p := models.NewPlayer(params["playerID"])
   p.UploadWishList()
   result, _ := json.Marshal(p.WishList)
 	return result
