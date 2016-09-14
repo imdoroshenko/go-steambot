@@ -4,8 +4,13 @@ import (
 	"net/http"
 	"github.com/imdoroshenko/go-steambot/models"
   "github.com/imdoroshenko/go-steambot/router"
+  "github.com/imdoroshenko/go-steambot/bot/slack"
   "encoding/json"
 )
+
+func init() {
+  go slack.Start()
+}
 
 func main() {
   appRouter := new(router.Router)
