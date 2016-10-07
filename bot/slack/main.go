@@ -19,30 +19,31 @@ var botDetails JSONResponse
 
 func Start () {
   fmt.Println("slack bot goroutine")
-  botDetails = RTMStart()
 
+  botDetails = RTMStart()
   url, ok := botDetails["url"].(string)
   if (ok == false) {
     fmt.Println("url not string")
   }
 
-  ws, err := websocket.Dial(url, "", dialOrigin)
+  ws, _ := EstablishWSConnection(url)
   defer ws.Close()
-  if err != nil {
-    fmt.Println("Error:", err)
-  }
-  fmt.Println("OK")
 
   for {
-    var msg = make([]byte, 512)
-    var n int
-    if n, err = ws.Read(msg); err != nil {
-      fmt.Println(err)
-    } else if n > 0 {
-      fmt.Printf("Received: %s.\n", msg[:n])
-    }
-
+    var data string
+    websocket.Message.Receive(ws, &data)
+    fmt.Printf("Received: %s\n", data)
   }
+}
+
+func EstablishWSConnection (url string) (*websocket.Conn, error) {
+  ws, err := websocket.Dial(url, "", dialOrigin)
+  if err != nil {
+    fmt.Println("Error:", err)
+    return nil, err
+  }
+  fmt.Println("WS connection established")
+  return ws, nil
 }
 
 func RTMStart () JSONResponse {
