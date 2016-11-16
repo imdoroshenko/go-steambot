@@ -1,70 +1,79 @@
 package slack
 
 import (
-  "fmt"
-  "net/http"
-  "io/ioutil"
-  "encoding/json"
-  "golang.org/x/net/websocket"
-  "os"
-)
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
 
-type JSONResponse map[string]interface{}
+	"golang.org/x/net/websocket"
+)
 
 const dialOrigin string = "http://localhost/"
 
-var apiToken string = os.Getenv("SLACK_API_TOKEN")
+var apiToken = os.Getenv("SLACK_API_TOKEN")
 
-var botDetails JSONResponse
-
-func Start () {
-  fmt.Println("slack bot goroutine")
-
-  botDetails = RTMStart()
-  url, ok := botDetails["url"].(string)
-  if (ok == false) {
-    fmt.Println("url not string")
-  }
-
-  ws, _ := EstablishWSConnection(url)
-  defer ws.Close()
-
-  for {
-    var data string
-    websocket.Message.Receive(ws, &data)
-    fmt.Printf("Received: %s\n", data)
-  }
+type botDetails struct {
+	URL string
 }
 
-func EstablishWSConnection (url string) (*websocket.Conn, error) {
-  ws, err := websocket.Dial(url, "", dialOrigin)
-  if err != nil {
-    fmt.Println("Error:", err)
-    return nil, err
-  }
-  fmt.Println("WS connection established")
-  return ws, nil
+type SlackBot struct {
+	//Events chan Event
 }
 
-func RTMStart () JSONResponse {
-  resp, httpErr := http.Get("https://slack.com/api/rtm.start?token=" + apiToken)
-  defer resp.Body.Close()
+func NewSlackBot() *SlackBot {
+	return new(SlackBot)
+}
 
-  if httpErr != nil {
-    fmt.Println("http get error")
-    //return nil, err;
-  }
+// Start will start slack bot routines.
+func (sb *SlackBot) Start() {
+	fmt.Println("slack bot goroutine")
+	bot := rtmStart()
+	ws, _ := establishWSConnection(bot.URL)
 
-  body, readAllErr := ioutil.ReadAll(resp.Body)
-  if readAllErr != nil {
-    fmt.Println("ioutil error")
-  }
+	defer ws.Close()
 
-  var botDetails JSONResponse
-  unmarshalErr := json.Unmarshal(body, &botDetails)
+	for {
+		data := new(Event)
+		err := websocket.JSON.Receive(ws, data)
+		if err != nil {
+			fmt.Println("WS Codec.Receive", err)
+		}
+		fmt.Println(data)
+	}
+}
 
-  if unmarshalErr != nil {
-    fmt.Println("Unmarshal error")
-  }
-  return botDetails
+// establishWSConnection will establish WS connection to slack API.
+func establishWSConnection(url string) (*websocket.Conn, error) {
+	ws, err := websocket.Dial(url, "", dialOrigin)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
+	}
+	fmt.Println("WS connection established")
+	return ws, nil
+}
+
+// rtmStart will request new rtm session from slack API.
+func rtmStart() *botDetails {
+	resp, httpErr := http.Get("https://slack.com/api/rtm.start?token=" + apiToken)
+	defer resp.Body.Close()
+
+	if httpErr != nil {
+		fmt.Println("http get error")
+	}
+
+	body, readAllErr := ioutil.ReadAll(resp.Body)
+	if readAllErr != nil {
+		fmt.Println("ioutil error")
+	}
+
+	var data = new(botDetails)
+	unmarshalErr := json.Unmarshal(body, data)
+
+	if unmarshalErr != nil {
+		fmt.Println("Unmarshal error")
+	}
+	return data
 }
